@@ -278,7 +278,7 @@
                     </button>
                     <a href="download_invoice.php?id=<?php echo $order_id; ?>" class="btn btn-secondary ms-2">
                         <i class="fas fa-file-download me-2"></i> Download PDF
-                    </a>
+                    
                     
 
                     <a href="order_history.php" class="btn btn-outline-secondary ms-2">
