@@ -281,9 +281,7 @@
                     </a>
                     
 
-                    <a href="order_history.php" class="btn btn-outline-secondary ms-2">
-                        <i class="fas fa-arrow-left me-2"></i> Back to Orders
-                    </a>
+                 
                 </div>
             </div>
         </div>
