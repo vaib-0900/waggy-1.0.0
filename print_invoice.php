@@ -163,7 +163,8 @@
         <div class="container">
             <div class="invoice-container">
                 <!-- Invoice Header -->
-                <div class="invoice-header">
+                <div id="printableArea">
+                    <div class="invoice-header">
                     <h1 class="invoice-title">INVOICE</h1>
                     <p class="invoice-subtitle">Order #<?php echo $order_id; ?></p>
                     <span class="badge 
@@ -196,15 +197,15 @@
                 </div>
 
                 <div class="row">
-            <div class="col-md-6 company-info">
-                <h5 class="info-title">From:</h5>
-                <p><strong>Waggy Pet Shop</strong></p>
-                <p>123 Pet Street</p>
-                <p>Baramati,Near Bus Stand 413102</p>
-                <p>Phone: +91-8007450432</p>
-                <p>Email: support@waggyshop.com</p>
-                <p>GSTIN: 07ABCDE1234F1Z5</p>
-            </div>
+                    <div class="col-md-6 company-info">
+                        <h5 class="info-title">From:</h5>
+                        <p><strong>Waggy Pet Shop</strong></p>
+                        <p>123 Pet Street</p>
+                        <p>Baramati,Near Bus Stand 413102</p>
+                        <p>Phone: +91-8007450432</p>
+                        <p>Email: support@waggyshop.com</p>
+                        <p>GSTIN: 07ABCDE1234F1Z5</p>
+                    </div>
                     <div class="col-md-6 customer-info">
                         <h5 class="info-title">To:</h5>
                         <p><strong><?php echo htmlspecialchars($order['name']); ?></strong></p>
@@ -271,16 +272,16 @@
                     <p>For any questions regarding this invoice, please contact our customer support.</p>
                 </div>
 
+                </div>
                 <!-- Print Button -->
                 <div class="no-print text-center mt-4">
-                    <button onclick="window.print()" class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="printTable();">
                         <i class="fas fa-print me-2"></i> Print Invoice
                     </button>
+
                     <a href="download_invoice.php?id=<?php echo $order_id; ?>" class="btn btn-secondary ms-2">
                         <i class="fas fa-file-download me-2"></i> Download PDF
-                    
-                    
-
+                    </a>
                     <a href="order_history.php" class="btn btn-outline-secondary ms-2">
                         <i class="fas fa-arrow-left me-2"></i> Back to Orders
                     </a>
@@ -289,12 +290,12 @@
         </div>
 
         <script>
-            // Optional: Auto-print when page loads
-            // window.addEventListener('load', function() {
-            //     setTimeout(function() {
-            //         window.print();
-            //     }, 1000);
-            // });
+            function printTable() {
+                var printContent = document.getElementById("printableArea").innerHTML;
+                document.body.innerHTML = printContent;
+                window.print();
+                window.location.reload();
+            }
         </script>
     </body>
 
