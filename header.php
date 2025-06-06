@@ -206,20 +206,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
           </div>
 
-          <div class="offcanvas-body justify-content-between">
-        <select class="filter-categories border-0 mb-0 me-5">
-            <option>Shop by Category</option>
-            <option value="cloths.php">Clothes</option>
-            <option value="food.php">Food</option>
-            <option value="toy.php">Toy</option>
-        </select>
-        <script>
-            document.querySelector('.filter-categories').addEventListener('change', function() {
-                if (this.value) {
-                    window.location.href = this.value;
-                }
-            });
-        </script>
+          <div class="offcanvas-body justify-content-between ps-4 ">
             <ul class="navbar-nav menu-list list-unstyled d-flex gap-md-3 mb-0">
               <li class="nav-item">
                 <a href="index.php" class="nav-link active">Home</a>
