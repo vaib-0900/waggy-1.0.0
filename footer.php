@@ -74,10 +74,10 @@
                   <a href="#" class="nav-link">Returns & Refunds</a>
                 </li>
                 <li class="menu-item">
-                  <a href="#" class="nav-link">Checkout</a>
+                  <a href="checkout.php" class="nav-link">Checkout</a>
                 </li>
                 <li class="menu-item">
-                  <a href="#" class="nav-link">Delivery Information</a>
+                  <a href="order_details.php" class="nav-link">Delivery Information</a>
                 </li>
               </ul>
           </div>

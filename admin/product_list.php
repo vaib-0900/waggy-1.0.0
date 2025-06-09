@@ -15,7 +15,7 @@ include('sidebar.php');
             </div>
         </div>
         <br>
-        
+
         <div class="row">
             <div class="col-md-12">
                 <table class="table table-striped table-bordered table-hover" id="dataTables-example">
@@ -48,9 +48,7 @@ include('sidebar.php');
                             echo "<td>" . $row['discount_value'] . "</td>";
                             echo "<td>" . $row['sell_price'] . "</td>";
                             echo "<td>" . $row['product_description'] . "</td>";
-                            echo "<td>";
-                            $category_query = "SELECT category_name FROM tbl_category WHERE category_id = " . $row['add_category'];
-                            echo "</td>";
+                            echo "<td>" . $row['category_id'] . "</td>";
                             echo "<td>
                                     <a href='edit_product.php?id=" . $row['product_id'] . "' class='btn btn-primary btn-sm'>Edit</a>
                                     <a href='delete_product.php?id=" . $row['product_id'] . "' class='btn btn-danger btn-sm' onclick='return confirm(\"Are you sure?\")'>Delete</a>

@@ -12,6 +12,7 @@ if (isset($_POST['submit'])) {
     $discount_value = $_POST['discount_value'];
     $sell_price = $_POST['sell_price'];
     $product_description = $_POST['product_description'];
+    $category_id = $_POST['category_id'];
 
 
     if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] == 0) {
@@ -24,7 +25,7 @@ if (isset($_POST['submit'])) {
         exit;
     }
 
-    $query = "INSERT INTO products (`product_name`, `product_image`, `product_price`, `discount_per`, `discount_value`, `sell_price`,`product_description`) VALUES ('$product_name', '$product_img', '$product_price', '$discount_per', '$discount_value', '$sell_price', '$product_description')";
+    $query = "INSERT INTO products (`product_name`, `product_image`, `product_price`, `discount_per`, `discount_value`, `sell_price`,`product_description`,`category_id`) VALUES ('$product_name', '$product_img', '$product_price', '$discount_per', '$discount_value', '$sell_price', '$product_description','$category_id')";
     
     if (mysqli_query($conn, $query)) {
         echo "<script>alert('Product added successfully!');</script>";
@@ -93,7 +94,11 @@ if (isset($_POST['submit'])) {
                 $query = "SELECT * FROM tbl_category";
                 $result = mysqli_query($conn, $query);
                 while ($row = mysqli_fetch_assoc($result)) {
-                    echo "<option value='" . $row['category_id'] . "'>" . $row['category_name'] . "</option>";
+                ?>
+                <option value="<?php echo $row['category_id'];?>">
+                    <?php echo $row['category_name'];?>
+                </option>
+                <?php
                 }
                 ?>
 

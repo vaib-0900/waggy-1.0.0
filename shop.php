@@ -17,49 +17,13 @@ include 'header.php';
             <use xlink:href="#arrow-right"></use>
           </svg></a>
       </div>
-
     </div>
   </div>
 </section>
 
-
-<!-- <section id="categories" class="py-5">
-  <div class="container">
-    <h3 class="text-center mb-4">Categories</h3> 
-    <div class="row">
-      <div class="col-md-3">
-        <a href="#" class="categories-item d-block p-3 border rounded shadow-sm">
-          <iconify-icon class="category-icon mb-2" icon="ph:cat" style="font-size: 2rem;"></iconify-icon>
-          <h5>Cat Shop</h5>
-        </a>
-      </div>
-      <div class="col-md-3">
-        <a href="#" class="categories-item d-block p-3 border rounded shadow-sm">
-          <iconify-icon class="category-icon mb-2" icon="ph:bird" style="font-size: 2rem;"></iconify-icon>
-          <h5>Bird Shop</h5>
-        </a>
-      </div>
-      <div class="col-md-3">
-        <a href="#" class="categories-item d-block p-3 border rounded shadow-sm">
-          <iconify-icon class="category-icon mb-2" icon="ph:dog" style="font-size: 2rem;"></iconify-icon>
-          <h5>Dog Shop</h5>
-        </a>
-      </div>
-      <div class="col-md-3">
-        <a href="#" class="categories-item d-block p-3 border rounded shadow-sm">
-          <iconify-icon class="category-icon mb-2" icon="ph:fish" style="font-size: 2rem;"></iconify-icon>
-          <h5>Fish Shop</h5>
-        </a>
-      </div>
-    </div>
-  </div>
-</section> -->
-
-
 <section class="mt-5 mb-5" id="categories">
   <?php
   include "db_connection.php";
-
   // Fetch all categories from the database
   $query = "SELECT * FROM tbl_category";
   $result = $conn->query($query);
@@ -74,7 +38,7 @@ include 'header.php';
           $category_id = $row['category_id'];
           $category_name = htmlspecialchars($row['category_name']);
           $category_image = htmlspecialchars($row['category_image']);
-          
+
           $link = 'food.php';
           if ($category_id == 31) {
             $link = 'cloths.php';
@@ -82,7 +46,6 @@ include 'header.php';
           if ($category_id == 32) {
             $link = 'food.php';
           }
-
           ?>
           <div class="col-md-3 mb-4">
             <a href="<?= $link ?>?id=<?= $category_id ?>" class="categories-item d-block text-center p-3 border rounded shadow-sm h-100 text-decoration-none">
@@ -96,30 +59,135 @@ include 'header.php';
   <?php else: ?>
     <p class="text-center">No categories found.</p>
   <?php endif; ?>
-
-  <?php $conn->close(); ?>
 </section>
-
 
 <section id="bestselling" class="my-5 overflow-hidden">
   <div class="container py-5 mb-5">
-
     <div class="section-header d-md-flex justify-content-between align-items-center mb-3">
       <h2 class="display-3 fw-normal">Best selling products</h2>
       <div>
-        <a href="#" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
-          shop now
+        <button class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1" id="filter-toggle">
+          Filters
           <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
             <use xlink:href="#arrow-right"></use>
-          </svg></a>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <section class="mt-5 mb-5" id="products">
-      <div class="container">
-        <h3 class="text-center mb-4">Products</h3>
-        <div class="row">
+    <div class="row">
+      <!-- Filter Sidebar -->
+      <div class="col-md-3 mb-4" id="filter-sidebar">
+        <div class="card border rounded-3 shadow-sm p-3">
+          <h5 class="card-title mb-3">Filters</h5>
 
+          <!-- Price Range Filter -->
+          <!-- Replace the Price Range Filter section with this code -->
+          <div class="mb-4">
+            <h6 class="mb-3">Price Range</h6>
+            <div class="list-group">
+              <?php
+              // Define price ranges
+              $priceRanges = [
+                ['min' => 100, 'max' => 500],
+                ['min' => 500, 'max' => 1000],
+                ['min' => 1000, 'max' => 3000],
+                ['min' => 3000, 'max' => 5000],
+                ['min' => 5000, 'max' => 10000],
+                ['min' => 10000, 'max' => 15000]
+              ];
+
+              // Get product counts for each range
+              include "db_connection.php";
+              foreach ($priceRanges as $range) {
+                $countQuery = "SELECT COUNT(*) as count FROM products 
+                          WHERE product_price BETWEEN {$range['min']} AND {$range['max']}";
+                $countResult = $conn->query($countQuery);
+                $count = $countResult->fetch_assoc()['count'];
+
+                echo "<a href='#' class='list-group-item list-group-item-action price-range-filter d-flex justify-content-between align-items-center' 
+                  data-min='{$range['min']}' data-max='{$range['max']}'>
+                  {$range['min']} to {$range['max']}
+                  <span class='badge bg-primary rounded-pill'>{$count}</span>
+                  </a>";
+              }
+              ?>
+            </div>
+          </div>
+
+          <!-- Category Filter -->
+          <!-- Update the Category Filter section with counts -->
+          <div class="mb-4">
+            <h6 class="mb-3">Categories</h6>
+            <?php
+            $cat_query = "SELECT c.*, COUNT(p.product_id) as product_count 
+                 FROM tbl_category c
+                 LEFT JOIN products p ON c.category_id = p.category_id
+                 GROUP BY c.category_id";
+            $cat_result = $conn->query($cat_query);
+
+            if ($cat_result->num_rows > 0) {
+              while ($cat_row = $cat_result->fetch_assoc()) {
+                echo '<div class="form-check mb-2 d-flex justify-content-between align-items-center">
+                <div>
+                    <input class="form-check-input category-filter" type="checkbox" value="' . $cat_row['category_id'] . '" id="cat-' . $cat_row['category_id'] . '">
+                    <label class="form-check-label" for="cat-' . $cat_row['category_id'] . '">
+                        ' . htmlspecialchars($cat_row['category_name']) . '
+                    </label>
+                </div>
+                <span class="badge bg-primary rounded-pill">' . $cat_row['product_count'] . '</span>
+            </div>';
+              }
+            }
+            ?>
+          </div>
+
+          <!-- Rating Filter -->
+          <div class="mb-4">
+            <h6 class="mb-3">Customer Rating</h6>
+            <div class="form-check mb-2">
+              <input class="form-check-input rating-filter" type="checkbox" value="4" id="rating-4">
+              <label class="form-check-label" for="rating-4">
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-secondary"></iconify-icon>
+                & above
+              </label>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input rating-filter" type="checkbox" value="3" id="rating-3">
+              <label class="form-check-label" for="rating-3">
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-secondary"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-secondary"></iconify-icon>
+                & above
+              </label>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input rating-filter" type="checkbox" value="2" id="rating-2">
+              <label class="form-check-label" for="rating-2">
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-warning"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-secondary"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-secondary"></iconify-icon>
+                <iconify-icon icon="clarity:star-solid" class="text-secondary"></iconify-icon>
+                & above
+              </label>
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100" id="apply-filters">Apply Filters</button>
+          <button class="btn btn-outline-secondary w-100 mt-2" id="reset-filters">Reset</button>
+        </div>
+      </div>
+
+      <!-- Products Section -->
+      <div class="col-md-9">
+        <div class="row" id="products-container">
           <?php
           include "db_connection.php";
           $query = "SELECT * FROM products";
@@ -128,7 +196,10 @@ include 'header.php';
           if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
           ?>
-              <div class="col-md-3 mb-4">
+              <div class="col-md-4 mb-4 product-card"
+                data-price="<?= $row['product_price'] ?>"
+                data-category="<?= $row['category_id'] ?>"
+                data-rating="5">
                 <div class="card h-100 border rounded-3 shadow-sm p-2 text-center">
                   <a href="shop.php?id=<?= $row['product_id'] ?>">
                     <img src="admin/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" class="img-fluid rounded-3 mb-2" style="height: 200px; object-fit: cover;">
@@ -145,10 +216,14 @@ include 'header.php';
                       <small class="text-muted">5.0</small>
                     </span>
                     <h5 class="text-primary">Rs. <?= $row['product_price'] ?></h5>
-                    <div class="d-flex justify-content-center mt-3">
-                      <a href="addtocart.php?id=<?= $row['product_id']?> " class="btn btn-sm btn-outline-primary me-2">Add to Cart</a>
-                      <a href="wishlist.php" class="btn btn-sm btn-outline-danger">
-                        <iconify-icon icon="fluent:heart-28-filled"></iconify-icon>
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                      <a href="addtocart.php?id=<?= $row['product_id'] ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-2 rounded-pill shadow-sm">
+                        <iconify-icon icon="mdi:cart-plus" class="me-2"></iconify-icon>
+                        <span>Add to Cart</span>
+                      </a>
+                      <a href="wishlist.php?id=<?= $row['product_id'] ?>" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-2 rounded-pill shadow-sm">
+                        <iconify-icon icon="fluent:heart-28-filled" class="me-2"></iconify-icon>
+                        <span>Wishlist</span>
                       </a>
                     </div>
                   </div>
@@ -163,906 +238,246 @@ include 'header.php';
           ?>
         </div>
       </div>
-    </section>
-
-
-
-
-  </div>
-  </div>
-  <!-- / category-carousel -->
-
-
-  </div>
-</section>
-<section id="clothing" class="my-5 overflow-hidden">
-  <div class="container pb-5">
-
-    <div class="section-header d-md-flex justify-content-between align-items-center mb-3">
-      <h2 class="display-3 fw-normal">Pet Clothing</h2>
-      <div>
-        <a href="cloths.php" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
-          shop now
-          <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
-            <use xlink:href="#arrow-right"></use>
-          </svg></a>
-      </div>
-    </div>
-
-    <div class="products-carousel swiper">
-      <div class="swiper-wrapper">
-        <!-- dog cloths -->
-        <?php
-        include "db_connection.php";
-
-        $query = "SELECT * FROM products WHERE product_id = 7";
-        $result = $conn->query($query);
-
-        if ($result->num_rows > 0) {
-          $row = $result->fetch_assoc();
-        ?>
-          <div class="swiper-slide">
-            <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle text-right">New</div>
-
-            <div class="card position-relative">
-              <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                <img src="admin/<?php echo $row['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($row['product_name']); ?>">
-              </a>
-
-              <div class="card-body p-0">
-                <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                  <h4 class="card-title pt-4 m-0"><?php echo htmlspecialchars($row['product_name']); ?></h4>
-                </a>
-
-                <div class="card-text">
-                  <span class="rating secondary-font">
-                    <?php for ($i = 0; $i < 5; $i++) { ?>
-                      <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                    <?php } ?>
-                    5.0
-                  </span>
-
-                  <h3 class="secondary-font text-primary">Rs.<?php echo $row['product_price']; ?></h3>
-
-                  <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3 ">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        <?php
-        } else {
-          echo '<p class="text-center">Product with ID 7 not found.</p>';
-        }
-        $conn->close();
-        ?>
-
-        <?php
-        include "db_connection.php";
-
-        $query = "SELECT * FROM products WHERE product_id = 8";
-        $result = $conn->query($query);
-
-        if ($result->num_rows > 0) {
-          $row = $result->fetch_assoc();
-        ?>
-          <div class="swiper-slide">
-            <div class="card position-relative">
-
-              <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                <img src="admin/<?php echo $row['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($row['product_name']); ?>">
-              </a>
-
-              <div class="card-body p-0">
-                <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                  <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($row['product_name']); ?></h3>
-                </a>
-
-                <div class="card-text">
-                  <span class="rating secondary-font">
-                    <?php for ($i = 0; $i < 5; $i++) { ?>
-                      <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                    <?php } ?>
-                    5.0
-                  </span>
-
-                  <h3 class="secondary-font text-primary">Rs.<?php echo $row['product_price']; ?></h3>
-
-                  <div class="d-flex flex-wrap mt-3">
-
-                    <form action="addtocart.php" method="POST" class="me-3">
-                      <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
-                      <input type="hidden" name="cart_qty" value="1">
-                      <button type="submit" class="btn-cart px-4 pt-3 pb-3">
-                        <h5 class="text-uppercase m-0">Add to Cart</h5>
-                      </button>
-                    </form>
-
-                    <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                      <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        <?php
-        } else {
-          echo '<p class="text-center">Product with ID 8 not found.</p>';
-        }
-
-        $conn->close();
-        ?>
-
-        <?php
-        include "db_connection.php";
-
-        $query = "SELECT * FROM products WHERE product_id = 9";
-        $result = $conn->query($query);
-
-        if ($result->num_rows > 0) {
-          $row = $result->fetch_assoc();
-        ?>
-          <div class="swiper-slide">
-            <!-- Discount badge -->
-            <div class="z-1 position-absolute rounded-3 border border-dark-subtle m-3 px-3 bg-white">-10%</div>
-
-            <div class="card position-relative">
-              <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                <img src="admin/<?php echo $row['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($row['product_name']); ?>">
-              </a>
-
-              <div class="card-body p-0">
-                <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                  <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($row['product_name']); ?></h3>
-                </a>
-
-                <div class="card-text">
-                  <span class="rating secondary-font">
-                    <?php for ($i = 0; $i < 5; $i++) { ?>
-                      <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                    <?php } ?>
-                    5.0
-                  </span>
-
-                  <h3 class="secondary-font text-primary">Rs.<?php echo $row['product_price']; ?></h3>
-
-                  <div class="d-flex flex-wrap mt-3">
-                    <!-- Use POST for Add to Cart -->
-                    <form action="addtocart.php" method="POST" class="me-3">
-                      <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
-                      <input type="hidden" name="cart_qty" value="1">
-                      <button type="submit" class="btn-cart px-4 pt-3 pb-3">
-                        <h5 class="text-uppercase m-0">Add to Cart</h5>
-                      </button>
-                    </form>
-
-                    <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                      <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        <?php
-        } else {
-          echo '<p class="text-center">Product with ID 9 not found.</p>';
-        }
-
-        $conn->close();
-        ?>
-
-        <?php
-        include "db_connection.php";
-
-        $query = "SELECT * FROM products WHERE product_id = 10";
-        $result = $conn->query($query);
-
-        if ($result->num_rows > 0) {
-          $row = $result->fetch_assoc();
-        ?>
-          <div class="swiper-slide">
-            <div class="card position-relative">
-              <!-- Product Image -->
-              <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                <img src="admin/<?php echo htmlspecialchars($row['product_image']); ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($row['product_name']); ?>">
-              </a>
-
-              <div class="card-body p-0">
-                <!-- Product Title -->
-                <a href="single-product.php?id=<?php echo $row['product_id']; ?>">
-                  <h4 class="card-title pt-4 m-0"><?php echo htmlspecialchars($row['product_name']); ?></h4>
-                </a>
-
-                <div class="card-text">
-                  <!-- Rating -->
-                  <span class="rating secondary-font">
-                    <?php for ($i = 0; $i < 5; $i++) { ?>
-                      <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                    <?php } ?>
-                    5.0
-                  </span>
-
-                  <!-- Price -->
-                  <h3 class="secondary-font text-primary">Rs.<?php echo $row['product_price']; ?></h3>
-
-                  <!-- Add to Cart and Wishlist -->
-                  <div class="d-flex flex-wrap mt-3">
-                    <form action="addtocart.php" method="POST" class="me-3">
-                      <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
-                      <input type="hidden" name="cart_qty" value="1">
-                      <button type="submit" class="btn-cart px-4 pt-3 pb-3">
-                        <h5 class="text-uppercase m-0">Add to Cart</h5>
-                      </button>
-                    </form>
-
-                    <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                      <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        <?php
-        } else {
-          echo '<p class="text-center">Product with ID 10 not found.</p>';
-        }
-
-        $conn->close();
-        ?>
-      </div>
-      <!-- dog cloths -->
-    </div>
-  </div>
-  <!-- / products-carousel -->
-
-  </div>
-</section>
-
-<section id="foodies" class="my-5">
-  <div class="container my-5 py-5">
-
-    <div class="section-header d-md-flex justify-content-between align-items-center">
-      <h2 class="display-3 fw-normal">Pet Foodies</h2>
-      <div class="mb-4 mb-md-0">
-        <p class="m-0">
-          <button class="filter-button me-4  active" data-filter="*">ALL</button>
-          <button class="filter-button me-4 " data-filter=".cat">CAT</button>
-          <button class="filter-button me-4 " data-filter=".dog">DOG</button>
-          <button class="filter-button me-4 " data-filter=".bird">BIRD</button>
-        </p>
-      </div>
-      <div>
-        <a href="food.php" class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1">
-          shop now
-          <svg width="24" height="24" viewBox="0 0 24 24" class="mb-1">
-            <use xlink:href="#arrow-right"></use>
-          </svg></a>
-      </div>
-    </div>
-
-    <div class="isotope-container row">
-      <!-- dog food -->
-      <?php
-      $query = "SELECT * FROM products 
-WHERE category_id = (SELECT category_id FROM tbl_category WHERE category_name = 'foodies')";
-      ?>
-      <?php
-      include "db_connection.php";
-      $query = "SELECT * FROM products WHERE product_id = 11";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item dog col-md-4 col-lg-3 my-4">
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3 ">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-
-      <?php
-      include "db_connection.php";
-      $query = "SELECT * FROM products WHERE product_id = 12";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item dog col-md-4 col-lg-3 my-4">
-          <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
-            New
-          </div>
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3 ">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-      <?php
-      include "db_connection.php"; // update this with your DB connection file
-      $query = "SELECT * FROM products WHERE product_id = 13";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item dog col-md-4 col-lg-3 my-4">
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3 ">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-      <?php
-      include "db_connection.php";
-      $query = "SELECT * FROM products WHERE product_id = 14";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item dog col-md-4 col-lg-3 my-4">
-          <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
-            Sold
-          </div>
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-      <!-- dog food -->
-
-      <!-- cat food -->
-      <?php
-      include "db_connection.php"; // Replace with your actual DB connection file
-      $query = "SELECT * FROM products WHERE product_id = 15";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item cat col-md-4 col-lg-3 my-4">
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3 ">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-      <?php
-      include "db_connection.php"; // Your DB connection file
-
-      $query = "SELECT * FROM products WHERE product_id = 17";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item cat col-md-4 col-lg-3 my-4">
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-
-      <?php
-      include "db_connection.php"; // Replace with your actual DB connection
-      $query = "SELECT * FROM products WHERE product_id = 16";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item cat col-md-4 col-lg-3 my-4">
-          <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
-            Sale
-          </div>
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-      <?php
-      include "db_connection.php"; 
-
-      $query = "SELECT * FROM products WHERE product_id = 18";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-
-        <div class="item cat col-md-4 col-lg-3 my-4">
-          <div class="card position-relative">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">Rs.<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      $conn->close();
-      ?>
-
-      <!-- cat food -->
-
-      <!-- bird food -->
-      <?php
-      include "db_connection.php"; // connect to your DB
-
-      $query = "SELECT * FROM products WHERE product_id = 19";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-        <div class="item bird col-md-4 col-lg-3 my-4 mt-5">
-          <div class="card position-relative mt-4">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">$<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3 ">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      ?>
-
-
-      <?php
-      include "db_connection.php";
-
-      $query = "SELECT * FROM products WHERE product_id = 21";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-        <div class="item bird col-md-4 col-lg-3 my-4 mt-4">
-          <div class="card position-relative mt-3">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">$<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      ?>
-
-      <?php
-      include "db_connection.php";
-
-      $query = "SELECT * FROM products WHERE product_id = 22";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-        <div class="item bird col-md-4 col-lg-3 my-4 mt-4">
-          <div class="card position-relative mt-3">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">$<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      ?>
-
-      <?php
-      include "db_connection.php"; // connect to your DB
-
-      $query = "SELECT * FROM products WHERE product_id = 20";
-      $result = $conn->query($query);
-
-      if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-      ?>
-        <div class="item bird col-md-4 col-lg-3 my-4 mt-4">
-          <div class="z-1 position-absolute rounded-3 m-3 px-3 border border-dark-subtle">
-            Sale
-          </div>
-          <div class="card position-relative mt-5">
-            <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-              <img src="admin/<?php echo $product['product_image']; ?>" class="img-fluid rounded-4" alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-            </a>
-            <div class="card-body p-0">
-              <a href="single-product.php?id=<?php echo $product['product_id']; ?>">
-                <h3 class="card-title pt-4 m-0"><?php echo htmlspecialchars($product['product_name']); ?></h3>
-              </a>
-              <div class="card-text">
-                <span class="rating secondary-font">
-                  <?php for ($i = 0; $i < 5; $i++) { ?>
-                    <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                  <?php } ?>
-                  5.0
-                </span>
-
-                <h3 class="secondary-font text-primary">$<?php echo $product['product_price']; ?></h3>
-
-                <div class="d-flex flex-wrap mt-3">
-                  <a href="addtocart.php?id=<?php echo $product['product_id']; ?>" class="btn-cart me-3 px-4 pt-3 pb-3">
-                    <h5 class="text-uppercase m-0">Add to Cart</h5>
-                  </a>
-                  <a href="wishlist.php" class="btn-wishlist px-4 pt-3">
-                    <iconify-icon icon="fluent:heart-28-filled" class="fs-5"></iconify-icon>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      <?php
-      } else {
-        echo "<p>Product not found.</p>";
-      }
-      ?>
-
-      <!-- bird food -->
-
     </div>
   </div>
 </section>
 
- 
+<style>
+  #filter-sidebar {
+    transition: all 0.3s ease;
+  }
 
+  .price-range-filter.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .price-range-slider {
+    position: relative;
+    height: 40px;
+  }
+
+  .price-range-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+  }
+
+  .price-range-slider input[type="range"]:nth-child(1) {
+    top: 0;
+  }
+
+  .price-range-slider input[type="range"]:nth-child(2) {
+    top: 20px;
+  }
+
+  @media (max-width: 768px) {
+    #filter-sidebar {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 80%;
+      height: 100vh;
+      z-index: 1050;
+      background: white;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    #filter-sidebar.show {
+      left: 0;
+    }
+
+    .filter-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1040;
+      display: none;
+    }
+
+    .filter-overlay.show {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile filter toggle
+    const filterToggle = document.getElementById('filter-toggle');
+    const filterSidebar = document.getElementById('filter-sidebar');
+    const filterOverlay = document.createElement('div');
+    filterOverlay.className = 'filter-overlay';
+    document.body.appendChild(filterOverlay);
+    
+    filterToggle.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+            filterSidebar.classList.toggle('show');
+            filterOverlay.classList.toggle('show');
+        }
+    });
+    
+    filterOverlay.addEventListener('click', function() {
+        filterSidebar.classList.remove('show');
+        filterOverlay.classList.remove('show');
+    });
+    
+    // Price range filter click handler
+    document.querySelectorAll('.price-range-filter').forEach(filter => {
+        filter.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all filters
+            document.querySelectorAll('.price-range-filter').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to clicked filter
+            this.classList.add('active');
+            
+            // Filter products
+            filterProducts();
+        });
+    });
+    
+    // Function to update counts after filtering
+    function updateFilterCounts() {
+        // Get current active filters
+        const activePriceFilter = document.querySelector('.price-range-filter.active');
+        let minPrice = 0;
+        let maxPrice = 100000;
+        
+        if (activePriceFilter) {
+            minPrice = parseInt(activePriceFilter.dataset.min);
+            maxPrice = parseInt(activePriceFilter.dataset.max);
+        }
+        
+        const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked')).map(el => el.value);
+        const selectedRatings = Array.from(document.querySelectorAll('.rating-filter:checked')).map(el => parseInt(el.value));
+        
+        // Update price range counts
+        document.querySelectorAll('.price-range-filter').forEach(filter => {
+            const rangeMin = parseInt(filter.dataset.min);
+            const rangeMax = parseInt(filter.dataset.max);
+            
+            // Count products in this range that match other filters
+            let count = 0;
+            document.querySelectorAll('.product-card').forEach(card => {
+                const price = parseInt(card.dataset.price);
+                const category = card.dataset.category;
+                const rating = parseInt(card.dataset.rating);
+                
+                const priceInRange = price >= rangeMin && price <= rangeMax;
+                const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(category);
+                const ratingMatch = selectedRatings.length === 0 || selectedRatings.some(r => rating >= r);
+                
+                if (priceInRange && categoryMatch && ratingMatch) {
+                    count++;
+                }
+            });
+            
+            // Update the badge count
+            const badge = filter.querySelector('.badge');
+            if (badge) {
+                badge.textContent = count;
+            }
+        });
+        
+        // Update category counts
+        document.querySelectorAll('.category-filter').forEach(checkbox => {
+            const categoryId = checkbox.value;
+            const parentDiv = checkbox.closest('.form-check');
+            const badge = parentDiv.querySelector('.badge');
+            
+            if (badge) {
+                let count = 0;
+                document.querySelectorAll('.product-card').forEach(card => {
+                    const price = parseInt(card.dataset.price);
+                    const category = card.dataset.category;
+                    const rating = parseInt(card.dataset.rating);
+                    
+                    const priceMatch = price >= minPrice && price <= maxPrice;
+                    const categoryMatch = category === categoryId;
+                    const ratingMatch = selectedRatings.length === 0 || selectedRatings.some(r => rating >= r);
+                    
+                    if (priceMatch && categoryMatch && ratingMatch) {
+                        count++;
+                    }
+                });
+                
+                badge.textContent = count;
+            }
+        });
+    }
+    
+    // Filter products function
+    function filterProducts() {
+        // Get active price range
+        const activePriceFilter = document.querySelector('.price-range-filter.active');
+        let minPrice = 0;
+        let maxPrice = 100000;
+        
+        if (activePriceFilter) {
+            minPrice = parseInt(activePriceFilter.dataset.min);
+            maxPrice = parseInt(activePriceFilter.dataset.max);
+        }
+        
+        const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked')).map(el => el.value);
+        const selectedRatings = Array.from(document.querySelectorAll('.rating-filter:checked')).map(el => parseInt(el.value));
+        
+        document.querySelectorAll('.product-card').forEach(card => {
+            const price = parseInt(card.dataset.price);
+            const category = card.dataset.category;
+            const rating = parseInt(card.dataset.rating);
+            
+            const priceMatch = price >= minPrice && price <= maxPrice;
+            const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(category);
+            const ratingMatch = selectedRatings.length === 0 || selectedRatings.some(r => rating >= r);
+            
+            if (priceMatch && categoryMatch && ratingMatch) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Update counts after filtering
+        updateFilterCounts();
+    }
+    
+    // Add event listeners to all filter elements
+    document.querySelectorAll('.price-range-filter, .category-filter, .rating-filter').forEach(filter => {
+        filter.addEventListener('change', filterProducts);
+        filter.addEventListener('click', filterProducts);
+    });
+    
+    // Apply filters button
+    document.getElementById('apply-filters').addEventListener('click', function() {
+        filterProducts();
+        if (window.innerWidth <= 768) {
+            filterSidebar.classList.remove('show');
+            filterOverlay.classList.remove('show');
+        }
+    });
+    
+    // Reset filters
+    document.getElementById('reset-filters').addEventListener('click', function() {
+        document.querySelectorAll('.price-range-filter').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.category-filter, .rating-filter').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Reload the original counts
+        location.reload();
+    });
+});
+</script>
 
 <?php include 'footer.php'; ?>
