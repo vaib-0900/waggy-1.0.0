@@ -21,45 +21,45 @@ include 'header.php';
   </div>
 </section>
 
-<section class="mt-5 mb-5" id="categories">
-  <?php
-  include "db_connection.php";
-  // Fetch all categories from the database
-  $query = "SELECT * FROM tbl_category";
-  $result = $conn->query($query);
-  ?>
+  <section class="mt-5 mb-5" id="categories">
+    <?php
+    include "db_connection.php";
+    // Fetch all categories from the database
+    $query = "SELECT * FROM tbl_category";
+    $result = $conn->query($query);
+    ?>
 
-  <?php if ($result->num_rows > 0): ?>
-    <div class="container">
-      <h3 class="text-center mb-4">Categories</h3>
-      <div class="row">
-        <?php while ($row = $result->fetch_assoc()): ?>
-          <?php
-          $category_id = $row['category_id'];
-          $category_name = htmlspecialchars($row['category_name']);
-          $category_image = htmlspecialchars($row['category_image']);
+    <?php if ($result->num_rows > 0): ?>
+      <div class="container">
+        <h3 class="text-center mb-4">Categories</h3>
+        <div class="row">
+          <?php while ($row = $result->fetch_assoc()): ?>
+            <?php
+            $category_id = $row['category_id'];
+            $category_name = htmlspecialchars($row['category_name']);
+            $category_image = htmlspecialchars($row['category_image']);
 
-          $link = 'food.php';
-          if ($category_id == 31) {
-            $link = 'cloths.php';
-          }
-          if ($category_id == 32) {
             $link = 'food.php';
-          }
-          ?>
-          <div class="col-md-3 mb-4">
-            <a href="<?= $link ?>?id=<?= $category_id ?>" class="categories-item d-block text-center p-3 border rounded shadow-sm h-100 text-decoration-none">
-              <img src="admin/<?= $category_image ?>" alt="<?= $category_name ?>" class="img-fluid mb-2" style="height: 80px;">
-              <h5 class="mb-0"><?= $category_name ?></h5>
-            </a>
-          </div>
-        <?php endwhile; ?>
+            if ($category_id == 31) {
+              $link = 'cloths.php';
+            }
+            if ($category_id == 32) {
+              $link = 'food.php';
+            }
+            ?>
+            <div class="col-md-3 mb-4">
+              <a href="<?= $link ?>?id=<?= $category_id ?>" class="categories-item d-block text-center p-3 border rounded shadow-sm h-100 text-decoration-none">
+                <img src="admin/<?= $category_image ?>" alt="<?= $category_name ?>" class="img-fluid mb-2" style="height: 80px;">
+                <h5 class="mb-0"><?= $category_name ?></h5>
+              </a>
+            </div>
+          <?php endwhile; ?>
+        </div>
       </div>
-    </div>
-  <?php else: ?>
-    <p class="text-center">No categories found.</p>
-  <?php endif; ?>
-</section>
+    <?php else: ?>
+      <p class="text-center">No categories found.</p>
+    <?php endif; ?>
+  </section>
 
 <section id="bestselling" class="my-5 overflow-hidden">
   <div class="container py-5 mb-5">
@@ -100,7 +100,7 @@ include 'header.php';
               // Get product counts for each range
               include "db_connection.php";
               foreach ($priceRanges as $range) {
-                $countQuery = "SELECT COUNT(*) as count FROM products 
+                $countQuery = "SELECT COUNT(*) as count FROM tbl_product 
                           WHERE product_price BETWEEN {$range['min']} AND {$range['max']}";
                 $countResult = $conn->query($countQuery);
                 $count = $countResult->fetch_assoc()['count'];
@@ -122,7 +122,7 @@ include 'header.php';
             <?php
             $cat_query = "SELECT c.*, COUNT(p.product_id) as product_count 
                  FROM tbl_category c
-                 LEFT JOIN products p ON c.category_id = p.category_id
+                 LEFT JOIN tbl_product p ON c.category_id = p.category_id
                  GROUP BY c.category_id";
             $cat_result = $conn->query($cat_query);
 
@@ -186,58 +186,58 @@ include 'header.php';
       </div>
 
       <!-- Products Section -->
-      <div class="col-md-9">
-        <div class="row" id="products-container">
-          <?php
-          include "db_connection.php";
-          $query = "SELECT * FROM products";
-          $result = $conn->query($query);
+        <div class="col-md-9">
+          <div class="row" id="products-container">
+            <?php
+            include "db_connection.php";
+            $query = "SELECT * FROM tbl_product";
+            $result = $conn->query($query);
 
-          if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-          ?>
-              <div class="col-md-4 mb-4 product-card"
-                data-price="<?= $row['product_price'] ?>"
-                data-category="<?= $row['category_id'] ?>"
-                data-rating="5">
-                <div class="card h-100 border rounded-3 shadow-sm p-2 text-center">
-                  <a href="shop.php?id=<?= $row['product_id'] ?>">
-                    <img src="admin/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" class="img-fluid rounded-3 mb-2" style="height: 200px; object-fit: cover;">
-                  </a>
-                  <div class="card-body p-2">
-                    <a href="single-product.php?id=<?= $row['product_id'] ?>">
-                      <h5 class="card-title text-truncate"><?= $row['product_name'] ?></h5>
+            if ($result->num_rows > 0) {
+              while ($row = $result->fetch_assoc()) {
+            ?>
+                <div class="col-md-4 mb-4 product-card"
+                  data-price="<?= $row['product_price'] ?>"
+                  data-category="<?= $row['category_id'] ?>"
+                  data-rating="5">
+                  <div class="card h-100 border rounded-3 shadow-sm p-2 text-center">
+                    <a href="shop.php?id=<?= $row['product_id'] ?>">
+                      <img src="admin/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" class="img-fluid rounded-3 mb-2" style="height: 200px; object-fit: cover;">
                     </a>
-                    <p class="card-text small text-muted"><?= $row['product_description'] ?></p>
-                    <span class="rating d-block mb-2">
-                      <?php for ($i = 0; $i < 5; $i++) { ?>
-                        <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
-                      <?php } ?>
-                      <small class="text-muted">5.0</small>
-                    </span>
-                    <h5 class="text-primary">Rs. <?= $row['product_price'] ?></h5>
-                    <div class="d-flex justify-content-center gap-2 mt-3">
-                      <a href="addtocart.php?id=<?= $row['product_id'] ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-2 rounded-pill shadow-sm">
-                        <iconify-icon icon="mdi:cart-plus" class="me-2"></iconify-icon>
-                        <span>Add to Cart</span>
+                    <div class="card-body p-2">
+                      <a href="single-product.php?id=<?= $row['product_id'] ?>">
+                        <h5 class="card-title text-truncate"><?= $row['product_name'] ?></h5>
                       </a>
-                      <a href="wishlist.php?id=<?= $row['product_id'] ?>" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-2 rounded-pill shadow-sm">
-                        <iconify-icon icon="fluent:heart-28-filled" class="me-2"></iconify-icon>
-                        <span>Wishlist</span>
-                      </a>
+                      <p class="card-text small text-muted"><?= $row['product_description'] ?></p>
+                      <span class="rating d-block mb-2">
+                        <?php for ($i = 0; $i < 5; $i++) { ?>
+                          <iconify-icon icon="clarity:star-solid" class="text-primary"></iconify-icon>
+                        <?php } ?>
+                        <small class="text-muted">5.0</small>
+                      </span>
+                      <h5 class="text-primary">Rs. <?= $row['product_price'] ?></h5>
+                      <div class="d-flex justify-content-center gap-2 mt-3">
+                        <a href="addtocart.php?id=<?= $row['product_id'] ?>" class="btn btn-outline-primary btn-sm d-flex align-items-center px-3 py-2 rounded-pill shadow-sm">
+                          <iconify-icon icon="mdi:cart-plus" class="me-2"></iconify-icon>
+                          <span>Add to Cart</span>
+                        </a>
+                        <a href="wishlist.php?id=<?= $row['product_id'] ?>" class="btn btn-outline-danger btn-sm d-flex align-items-center px-3 py-2 rounded-pill shadow-sm">
+                          <iconify-icon icon="fluent:heart-28-filled" class="me-2"></iconify-icon>
+                          <span>Wishlist</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-          <?php
+            <?php
+              }
+            } else {
+              echo '<p class="text-center">No products found.</p>';
             }
-          } else {
-            echo '<p class="text-center">No products found.</p>';
-          }
-          $conn->close();
-          ?>
+            $conn->close();
+            ?>
+          </div>
         </div>
-      </div>
     </div>
   </div>
 </section>

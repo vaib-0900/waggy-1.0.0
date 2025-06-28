@@ -29,7 +29,7 @@ include "header.php";
         <div class="mb-3">
             <label for="phone" class="form-label">Phone Number</label>
             <input type="tel" class="form-control" name="phone" pattern="[0-9]{10}" required>
-        </div>
+        </div>  
         <div class="mb-3">
             <label for="address" class="form-label">Address</label>
             <textarea class="form-control" name="address" rows="3" required></textarea>
